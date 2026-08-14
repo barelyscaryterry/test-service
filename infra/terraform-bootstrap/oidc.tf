@@ -134,6 +134,8 @@ data "aws_iam_policy_document" "github_actions_permissions" {
     actions = [
       "s3:CreateBucket",
       "s3:DeleteBucket",
+      "s3:PutBucketAcl",
+      "s3:GetBucketAcl",
       "s3:PutBucketVersioning",
       "s3:GetBucketVersioning",
       "s3:PutBucketPolicy",
@@ -146,6 +148,18 @@ data "aws_iam_policy_document" "github_actions_permissions" {
       "s3:GetLifecycleConfiguration",
       "s3:PutBucketTagging",
       "s3:GetBucketTagging",
+      "s3:PutBucketOwnershipControls",
+      "s3:GetBucketOwnershipControls",
+      "s3:PutBucketRequestPayment",
+      "s3:GetBucketRequestPayment",
+      "s3:PutBucketLogging",
+      "s3:GetBucketLogging",
+      "s3:GetBucketObjectLockConfiguration",
+      "s3:GetAccelerateConfiguration",
+      "s3:GetBucketCORS",
+      "s3:GetBucketWebsite",
+      "s3:GetReplicationConfiguration",
+      "s3:GetBucketNotification",
       "s3:ListBucket",
     ]
     resources = ["*"]
