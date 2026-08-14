@@ -25,17 +25,20 @@ data "aws_iam_policy_document" "github_actions_trust" {
       values   = ["sts.amazonaws.com"]
     }
 
-    # Allow both PR runs (any branch/PR against this repo) and pushes to
-    # main - matches "plan on PR, apply on merge to main". GitHub's sub
+    # Allow PR runs (plan) and jobs targeting the "production" environment
+    # (apply) - matches "plan on PR, apply on merge to main". GitHub's sub
     # claim appends internal numeric IDs to BOTH the owner and repo name
-    # (e.g. "repo:owner@123/repo@456:pull_request"), so wildcards are
-    # needed after each segment, not just at the end.
+    # (e.g. "repo:owner@123/repo@456:..."), so wildcards are needed after
+    # each segment. A job with `environment: production` gets a sub of
+    # "...:environment:production" rather than "...:ref:refs/heads/main",
+    # regardless of triggering event - that's what the apply job actually
+    # sends, so match on the environment form, not the ref form.
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
       values = [
         "repo:${split("/", var.github_repo)[0]}*/${split("/", var.github_repo)[1]}*:pull_request",
-        "repo:${split("/", var.github_repo)[0]}*/${split("/", var.github_repo)[1]}*:ref:refs/heads/main",
+        "repo:${split("/", var.github_repo)[0]}*/${split("/", var.github_repo)[1]}*:environment:production",
       ]
     }
   }
