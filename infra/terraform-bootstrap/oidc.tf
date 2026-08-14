@@ -26,13 +26,16 @@ data "aws_iam_policy_document" "github_actions_trust" {
     }
 
     # Allow both PR runs (any branch/PR against this repo) and pushes to
-    # main - matches "plan on PR, apply on merge to main".
+    # main - matches "plan on PR, apply on merge to main". GitHub's sub
+    # claim can include internal numeric IDs after the owner/repo name
+    # (e.g. "repo:owner@123/repo@456:pull_request"), so match with a
+    # wildcard after the repo name rather than requiring an exact string.
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
       values = [
-        "repo:${var.github_repo}:pull_request",
-        "repo:${var.github_repo}:ref:refs/heads/main",
+        "repo:${var.github_repo}*:pull_request",
+        "repo:${var.github_repo}*:ref:refs/heads/main",
       ]
     }
   }
