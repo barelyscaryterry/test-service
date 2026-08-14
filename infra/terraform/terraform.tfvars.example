@@ -1,0 +1,13 @@
+# Copy to terraform.tfvars and adjust as needed. terraform.tfvars itself is
+# gitignored; this example file is committed.
+
+aws_region   = "us-east-1"
+service_name = "test-service"
+environment  = "test"
+
+# Reachable from inside the VPC only by default (not the public internet).
+# Widen this (or switch to a capture-proxy SG reference) once capture-proxy
+# has its own infra and needs to reach this service.
+app_ingress_cidrs = ["10.0.0.0/16"]
+
+dynamodb_deletion_protection = true
