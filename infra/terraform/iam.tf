@@ -44,6 +44,29 @@ resource "aws_iam_role_policy_attachment" "ssm" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+# The CodeDeploy agent running on-instance pulls deployment bundles
+# directly from S3 - this is all it needs beyond what SSM already grants.
+data "aws_iam_policy_document" "codedeploy_agent_access" {
+  statement {
+    actions   = ["s3:GetObject", "s3:GetObjectVersion"]
+    resources = ["${aws_s3_bucket.deploy_artifacts.arn}/*"]
+  }
+  statement {
+    actions   = ["s3:ListBucket"]
+    resources = [aws_s3_bucket.deploy_artifacts.arn]
+  }
+}
+
+resource "aws_iam_policy" "codedeploy_agent_access" {
+  name   = "${local.name_prefix}-codedeploy-agent-access"
+  policy = data.aws_iam_policy_document.codedeploy_agent_access.json
+}
+
+resource "aws_iam_role_policy_attachment" "codedeploy_agent_access" {
+  role       = aws_iam_role.ec2.name
+  policy_arn = aws_iam_policy.codedeploy_agent_access.arn
+}
+
 resource "aws_iam_instance_profile" "ec2" {
   name = "${local.name_prefix}-ec2-profile"
   role = aws_iam_role.ec2.name

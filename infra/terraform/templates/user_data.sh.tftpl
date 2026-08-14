@@ -1,0 +1,38 @@
+#!/bin/bash
+set -euxo pipefail
+
+dnf install -y java-17-amazon-corretto-headless ruby wget
+
+# CodeDeploy agent install - AWS-documented, region-specific bucket.
+cd /home/ec2-user
+wget https://aws-codedeploy-${aws_region}.s3.${aws_region}.amazonaws.com/latest/install
+chmod +x ./install
+./install auto
+systemctl enable codedeploy-agent
+systemctl start codedeploy-agent
+
+mkdir -p /opt/${service_name}
+useradd --system --no-create-home --shell /sbin/nologin ${service_name} || true
+chown ${service_name}:${service_name} /opt/${service_name}
+
+# Unit file is provisioned once here, not redeployed per-release - only the
+# jar under /opt/${service_name}/app.jar changes on each CodeDeploy deploy.
+cat > /etc/systemd/system/${service_name}.service <<UNIT
+[Unit]
+Description=${service_name}
+After=network.target
+
+[Service]
+Type=simple
+User=${service_name}
+ExecStart=/usr/bin/java -jar /opt/${service_name}/app.jar
+Restart=on-failure
+RestartSec=5
+Environment=AWS_REGION=${aws_region}
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable ${service_name}
