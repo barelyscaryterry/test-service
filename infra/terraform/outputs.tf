@@ -31,3 +31,15 @@ output "ec2_security_group_id" {
 output "ec2_iam_role_arn" {
   value = aws_iam_role.ec2.arn
 }
+
+output "codedeploy_app_name" {
+  value = aws_codedeploy_app.this.name
+}
+
+output "codedeploy_deployment_group_name" {
+  value = aws_codedeploy_deployment_group.this.deployment_group_name
+}
+
+output "deploy_artifacts_bucket_name" {
+  value = aws_s3_bucket.deploy_artifacts.id
+}
