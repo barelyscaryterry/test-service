@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 # GitHub's OIDC thumbprint is well-known/stable; AWS also validates the
 # token via its issuer URL regardless, so this is a standard, safe pin.
 resource "aws_iam_openid_connect_provider" "github" {
@@ -107,6 +109,30 @@ data "aws_iam_policy_document" "github_actions_permissions" {
       "iam:PassRole",
     ]
     resources = ["*"]
+  }
+
+  # PutDashboard/GetDashboard/DeleteDashboards don't support resource-level
+  # ARN scoping (AWS requires "*" for these). Tag actions do, so those are
+  # scoped to the one dashboard this service manages.
+  statement {
+    sid = "CloudWatchDashboardManagement"
+    actions = [
+      "cloudwatch:PutDashboard",
+      "cloudwatch:GetDashboard",
+      "cloudwatch:DeleteDashboards",
+      "cloudwatch:ListDashboards",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "CloudWatchDashboardTagging"
+    actions = [
+      "cloudwatch:ListTagsForResource",
+      "cloudwatch:TagResource",
+      "cloudwatch:UntagResource",
+    ]
+    resources = ["arn:aws:cloudwatch::${data.aws_caller_identity.current.account_id}:dashboard/${var.service_name}-*"]
   }
 
   statement {
