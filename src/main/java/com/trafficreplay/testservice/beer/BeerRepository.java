@@ -1,5 +1,8 @@
 package com.trafficreplay.testservice.beer;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -36,6 +39,9 @@ public class BeerRepository {
         this.tableName = tableName;
     }
 
+    @RateLimiter(name = "beerApi")
+    @Retry(name = "beerApi")
+    @CircuitBreaker(name = "beerApi")
     public Beer put(Beer beer) {
         PutItemRequest request = PutItemRequest.builder()
                 .tableName(tableName)
@@ -49,6 +55,9 @@ public class BeerRepository {
         return beer;
     }
 
+    @RateLimiter(name = "beerApi")
+    @Retry(name = "beerApi")
+    @CircuitBreaker(name = "beerApi")
     public Beer get(String id) {
         GetItemRequest request = GetItemRequest.builder()
                 .tableName(tableName)
@@ -69,6 +78,9 @@ public class BeerRepository {
         return fromItem(response.item());
     }
 
+    @RateLimiter(name = "beerApi")
+    @Retry(name = "beerApi")
+    @CircuitBreaker(name = "beerApi")
     public List<Beer> findAll() {
         ScanRequest request = ScanRequest.builder()
                 .tableName(tableName)

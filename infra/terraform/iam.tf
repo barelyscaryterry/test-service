@@ -38,6 +38,32 @@ resource "aws_iam_role_policy_attachment" "dynamodb_access" {
   policy_arn = aws_iam_policy.dynamodb_access.arn
 }
 
+# cloudwatch:PutMetricData has no resource-level permissions - AWS requires "*".
+# Scoped down instead via a condition on the namespace the app actually publishes to
+# (see management.cloudwatch.metrics.export.namespace in application.properties).
+data "aws_iam_policy_document" "cloudwatch_metrics" {
+  statement {
+    actions   = ["cloudwatch:PutMetricData"]
+    resources = ["*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "cloudwatch:namespace"
+      values   = [var.cloudwatch_namespace]
+    }
+  }
+}
+
+resource "aws_iam_policy" "cloudwatch_metrics" {
+  name   = "${local.name_prefix}-cloudwatch-metrics"
+  policy = data.aws_iam_policy_document.cloudwatch_metrics.json
+}
+
+resource "aws_iam_role_policy_attachment" "cloudwatch_metrics" {
+  role       = aws_iam_role.ec2.name
+  policy_arn = aws_iam_policy.cloudwatch_metrics.arn
+}
+
 # Enables SSM Session Manager access (no SSH keypair, no inbound port 22).
 resource "aws_iam_role_policy_attachment" "ssm" {
   role       = aws_iam_role.ec2.name
