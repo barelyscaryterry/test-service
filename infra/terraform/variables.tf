@@ -64,6 +64,12 @@ variable "root_volume_size_gb" {
   default     = 30
 }
 
+variable "cloudwatch_namespace" {
+  description = "CloudWatch metrics namespace. Must match management.cloudwatch.metrics.export.namespace in application.properties."
+  type        = string
+  default     = "test-service"
+}
+
 variable "tags" {
   description = "Extra tags merged into every resource's default tags."
   type        = map(string)

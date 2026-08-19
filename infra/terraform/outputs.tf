@@ -43,3 +43,7 @@ output "codedeploy_deployment_group_name" {
 output "deploy_artifacts_bucket_name" {
   value = aws_s3_bucket.deploy_artifacts.id
 }
+
+output "cloudwatch_dashboard_url" {
+  value = "https://${var.aws_region}.console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#dashboards:name=${aws_cloudwatch_dashboard.this.dashboard_name}"
+}
